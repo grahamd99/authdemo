@@ -1,22 +1,30 @@
-const express               = require("express"),
-      mongoose              = require("mongoose")
+var   express               = require("express"),
+      mongoose              = require("mongoose"),
       passport              = require("passport"),
       bodyParser            = require("body-parser"),
       User                  = require("./models/user"),
       LocalStrategy         = require("passport-local"),
       passportLocalMongoose = require("passport-local-mongoose")
-const port = 3000
-const app = express()
 
-//const mongoose = require("mongoose")
-//mongoose.connect("mongodb://localhost/auth_demo_app");
+var port = 3000
+var app = express()
+
+// assign mongoose promise library and connect to database
+mongoose.Promise = global.Promise;
+
+const databaseUri = process.env.MONGODB_URI || 'mongodb://localhost/auth_demo_app';
+
+mongoose.connect(databaseUri, { useNewUrlParser: true } )
+      .then(() => console.log(`Database connected`))
+      .catch(err => console.log(`Database connection error: ${err.message}`));
+
 
 app.set('view engine', 'ejs');
 
 app.use(require("express-session")({
-	secret: "The quick brown fox jumps up and down",
-	resave: false,
-	saveUninitialized: false
+  secret: "The quick brown fox jumps up and down",
+  resave: false,
+  saveUninitialized: false
 }));
 
 app.use(passport.initialize());
