@@ -28,21 +28,15 @@ app.use(require("express-session")({
   saveUninitialized: false
 }));
 
+//app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-//passport.serializeUser(User,serializeUser());
-//passport.deserializeUser(User.deserializeUser());
+passport.use(new LocalStrategy(User.authenticate()));
 
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
-  });
-});
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 // ROUTES
 
@@ -62,15 +56,19 @@ app.post("/register", function(req, res){
   // the following require bodyParser
   console.log("username: " + req.body.username);
   console.log("password: " + req.body.password);
-  User.register(new User({username: req.body.username}), req.body.password, function(err, user){
-    if(err){
-      console.log(err);
-      return res.render('register');
-    }
-    passport.authenticate("local")(req, res, function(){
-      res.redirect("/secret");
+  var newUser = new User({username: req.body.username});
+  User.register(newUser, req.body.password, function(err, user){
+        if(err){
+        	console.log("ERROEE BLOCK");
+            console.log(err);
+            return res.render("register", {error: err.message});
+        }
+        passport.authenticate("local")(req, res, function(){
+        console.log("authentocate BLOCK");
+           //req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
+           res.redirect("/secret"); 
+        });
     });
-  });
 });
 
 app.listen(port, () => console.log('Auth demo app listening on port ' + port + '!'))
