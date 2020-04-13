@@ -44,7 +44,9 @@ app.get("/", function(req, res){
 	res.render("home");
 });
 
-app.get("/secret", function(req, res){
+
+// note isLoggedIn middleware function is used here
+app.get("/secret", isLoggedIn, function(req, res){
 	res.render("secret");
 });
 
@@ -78,7 +80,20 @@ app.get("/login", function(req, res){
 app.post("/login", passport.authenticate("local", {
 	successRedirect: "/secret",
 	failureRedirect: "/login"
-}) ,function(req, res){
+  }) ,function(req, res){
 });
+
+app.get("/logout", function(req, res){
+	req.logout();
+	res.redirect("/");
+});
+
+// middleware function to check whether user is logged in or not
+function isLoggedIn( req, res, next){
+	if(req.isAuthenticated()){
+		return next();
+	}
+	res.redirect("/login");
+}
 
 app.listen(port, () => console.log('Auth demo app listening on port ' + port + '!'))
