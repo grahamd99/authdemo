@@ -20,6 +20,7 @@ mongoose.connect(databaseUri, { useNewUrlParser: true } )
 
 
 app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(require("express-session")({
   secret: "The quick brown fox jumps up and down",
@@ -43,12 +44,33 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
+// ROUTES
+
 app.get("/", function(req, res){
 	res.render("home");
 });
 
 app.get("/secret", function(req, res){
 	res.render("secret");
+});
+
+app.get("/register", function(req, res){
+  res.render("register");
+});
+
+app.post("/register", function(req, res){
+  // the following require bodyParser
+  console.log("username: " + req.body.username);
+  console.log("password: " + req.body.password);
+  User.register(new User({username: req.body.username}), req.body.password, function(err, user){
+    if(err){
+      console.log(err);
+      return res.render('register');
+    }
+    passport.authenticate("local")(req, res, function(){
+      res.redirect("/secret");
+    });
+  });
 });
 
 app.listen(port, () => console.log('Auth demo app listening on port ' + port + '!'))
